@@ -1,0 +1,67 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        
+    - name: Install Backend Dependencies
+      working-directory: ./backend
+      run: npm ci
+      
+    - name: Install Frontend Dependencies
+      working-directory: ./frontend
+      run: npm ci
+      
+    - name: Build Frontend
+      working-directory: ./frontend
+      run: npm run build
+      
+    # Add testing steps here once tests are implemented
+    # - name: Run Backend Tests
+    #   working-directory: ./backend
+    #   run: npm test
+    
+  docker-build:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    # Example steps for building and pushing Docker images to Docker Hub
+    # Uncomment and configure secrets to use
+    
+    # - name: Login to Docker Hub
+    #   uses: docker/login-action@v2
+    #   with:
+    #     username: ${{ secrets.DOCKERHUB_USERNAME }}
+    #     password: ${{ secrets.DOCKERHUB_TOKEN }}
+        
+    # - name: Build and push Backend Image
+    #   uses: docker/build-push-action@v4
+    #   with:
+    #     context: ./backend
+    #     push: true
+    #     tags: ${{ secrets.DOCKERHUB_USERNAME }}/jobportal-backend:latest
+        
+    # - name: Build and push Frontend Image
+    #   uses: docker/build-push-action@v4
+    #   with:
+    #     context: ./frontend
+    #     push: true
+    #     tags: ${{ secrets.DOCKERHUB_USERNAME }}/jobportal-frontend:latest
